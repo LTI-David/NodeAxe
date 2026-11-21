@@ -1,0 +1,23 @@
+name: Documentation checks
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate documentation structure
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in README.md SECURITY.md CONTRIBUTING.md docs/ARCHITECTURE.md docs/ROADMAP.md; do
+            test -s "$file"
+          done
+          if grep -RInE '(BEGIN (RSA |OPENSSH |EC )?PRIVATE KEY|\b(xprv|tprv)[A-Za-z0-9]{20,})' --include='*.md' .; then
+            echo "Potential secret-like content detected"
+            exit 1
+          fi
