@@ -1,59 +1,64 @@
 # NodeAxe architecture
 
-NodeAxe is a self-hosted Bitcoin infrastructure platform. Its intended default deployment places the **NodeAxe Command Center on the same Ubuntu Linux host as Bitcoin Core**, with the option to monitor miners on local and remote networks.
+NodeAxe develops self-hosted Bitcoin infrastructure, miner monitoring, and education tools. The intended integrated host product is the **NodeAxe Sovereign Node & Home Server**: a general-purpose Ubuntu-based home server that can run multiple independent applications.
 
-> **Status:** Target architecture, not a claim about the current development deployment. The Command Center currently runs on a separate monitoring host and consumes node telemetry remotely. Migration to the node host is planned, not completed.
+The **NodeAxe Command Center** is an application hosted on that server product. It is **not part of Bitcoin Core** and must not depend on Bitcoin Core being installed or running.
 
-## Recommended integrated deployment
+> **Status:** Target product architecture, not a claim about the current deployment. The current development Command Center runs on a separate monitoring machine and receives node telemetry remotely. Moving it to the Sovereign Node & Home Server product has not yet been completed.
+
+## Recommended product architecture
 
 ```text
-                     NODEAXE PLATFORM
-                       Ubuntu host
+           NODEAXE SOVEREIGN NODE & HOME SERVER
+                    Ubuntu-based host
                             |
-             +--------------+--------------+
-             |                             |
-       Bitcoin services              Command Center
-             |                             |
-        Bitcoin Core                 Web dashboard
-        Solo mining pool             Fleet monitoring
-        Node telemetry               Device inventory
-             |                             |
-             +--------------+--------------+
+         +------------------+-------------------+
+         |                  |                   |
+   Bitcoin services   NodeAxe Command     Optional self-hosted
+     (optional)           Center               applications
+         |                  |                   |
+    Bitcoin Core       Web dashboard       Additional services
+    Solo mining pool   Fleet monitoring    (separately managed)
+    Node telemetry     Device inventory
+         |                  |
+         +---------+--------+
+                   |
+             Miner adapters
+                   |
+           +-------+--------+
+           |                |
+       Local miners     Remote miners
+       Bitaxe / ASICs   Bitaxe / ASICs
+       GPU hosts        GPU hosts
                             |
-                     Miner integrations
-                            |
-                  +---------+---------+
-                  |                   |
-             Local miners        Remote miners
-             Bitaxe / ASICs      Bitaxe / ASICs
-             GPU mining hosts    GPU mining hosts
-                                      |
-                              Secure private network
+                    Secure private network
 ```
 
-The Command Center is a **monitoring and management application**, not a dependency of Bitcoin Core or the mining pool. A dashboard outage must not interrupt node validation or mining.
+The server product is the **host platform**; Bitcoin Core, the solo-mining pool, and the Command Center are **separate services**. The Command Center can monitor miners independently of Bitcoin Core. A dashboard failure must not interrupt Bitcoin validation or mining.
 
 ## Optional distributed deployment
 
-For larger or existing installations, Command Center may run on a separate Ubuntu host. Node telemetry and miner telemetry are exchanged over authenticated private network connections. The dashboard should work in both integrated and distributed configurations without changing the underlying mining services.
+The Command Center may also be installed on a separate Ubuntu host for existing or larger deployments. Node and miner telemetry can be accessed across authenticated private network connections. Integrated hosting is the intended default for the Sovereign Node & Home Server product, not a hard requirement for Command Center.
 
 ## Component responsibilities
 
 | Component | Responsibility |
 | --- | --- |
-| Bitcoin Core | Independent full-node validation and Bitcoin RPC |
-| Solo mining pool | Stratum connections and mining work distribution |
-| Node telemetry | Read-only status for the node and local pool |
-| Command Center | Dashboard, aggregated metrics, inventory, and history |
-| Miner adapters | Device-specific collection for AxeOS/Bitaxe, ASICs, and GPU mining hosts |
+| Sovereign Node & Home Server | Ubuntu-based product host for independently managed services |
+| Bitcoin Core (optional service) | Independent full-node validation and local Bitcoin RPC |
+| Solo mining pool (optional service) | Stratum connections and mining work distribution |
+| Node telemetry | Read-only status for configured node and pool services |
+| NodeAxe Command Center | Web dashboard, fleet monitoring, inventory, and history |
+| Miner adapters | Device-specific collection for AxeOS/Bitaxe, other ASICs, and GPU mining hosts |
 | Secure networking | Optional authenticated access to remote sites and devices |
 
 ## Design principles
 
-- **Local-first:** integrated Ubuntu installation is the preferred target.
-- **Modular:** node, pool, telemetry, and dashboard are independently operable.
-- **No unnecessary exposure:** Bitcoin Core RPC remains loopback-only; do not expose administrative APIs publicly.
-- **Read-only by default:** explicit authentication and confirmation for any miner configuration changes.
+- **Product-first:** the Sovereign Node & Home Server is the recommended integrated host.
+- **Modular:** Bitcoin Core, pool, telemetry, Command Center, and other applications are independently operable.
+- **Node-independent dashboard:** Command Center remains useful without Bitcoin Core.
+- **No unnecessary exposure:** Bitcoin RPC remains loopback-only where installed; do not expose administrative APIs publicly.
+- **Read-only by default:** explicit authentication and confirmation for miner configuration changes.
 - **Portable:** no machine names, private IPs, or location-specific assumptions in public code.
 - **Stable inventory:** identify miners by persistent device identity, not IP alone.
 - **Private by default:** secrets and production configuration stay outside source control.
@@ -61,4 +66,4 @@ For larger or existing installations, Command Center may run on a separate Ubunt
 
 ## Development status
 
-The current implementation is a distributed prototype. The integrated Ubuntu-hosted Command Center is a design goal, and public installation instructions will follow testing and security review. Production dashboard source is not yet published in this repository.
+The current implementation is a distributed prototype. Hosting Command Center on the NodeAxe Sovereign Node & Home Server is a product design goal. Public installation instructions will follow testing and security review. Production dashboard source is not yet published in this repository.
